@@ -1,0 +1,77 @@
+<img src="img/iPhone-13.png" alt="iPhone 13">
+<!-- This image was found on https://www.apple.com/shop/buy-iphone/iphone-13-pro -->
+
+<img src="img/XPS-15.png" alt="Dell XPS 15">
+<!-- This image was found on https://www.dell.com/en-us/shop/dell-laptops/xps-15-9500-laptop/spd/xps-15-9500-laptop -->
+
+<img src="img/Galaxy-Tab-A7.png" alt="Samsung Galaxy Tab A7">
+<!-- This image was found on https://www.theverge.com/22150980/samsung-galaxy-tab-a7-tablet-review-price-specs-features -->
+
+<img src="img/PS5.png" alt="PS5">
+<!-- This image was found on https://www.digitalspy.com/tech/best-tech-deals/a34560561/sony-playstation-5-review/ -->
+
+<img src="img/Amazfit-GTS2.png" alt="Amazfit GTS 2">
+<!-- This image was found on https://www.amazon.com/Amazfit-Fitness-Super-Light-Measurement-Monitoring/dp/B08PCYKXV5?th=1 -->
+
+<img src="img/Galaxy-S21.png" alt="Samsung Galaxy S21">
+<!-- This image was found on https://www.samsung.com/us/business/mobile/phones/galaxy-s/galaxy-s21-5g-128gb-unlocked-sm-g991uzaaxaa/ -->
+
+<img src="img/Surface-Laptop-4.png" alt="Microsoft Surface Laptop 4">
+<!-- This image was found on https://www.amazon.com/Microsoft-Surface-Laptop-13-5-Touch-Screen/dp/B08YWRWLYM -->
+
+<img src="img/Thinkpad-X1-Carbon.png" alt="Lenovo Thinkpad X1 Carbon">
+<!-- This image was found on https://www.lenovo.com/us/en/p/laptops/thinkpad/thinkpadx1/x1-carbon-gen9/22tp2x1x1c9?orgRef=https%253A%252F%252Fwww.google.com%252F -->
+
+<img src="img/Pixel-6.png" alt="Google Pixel 6">
+<!-- This image was found on https://www.amazon.com/Google-Pixel-Unlocked-Smartphone-Ultrawide/dp/B09HJZPFDD?th=1 -->
+
+<img src="img/Xbox-Series-X.png" alt="Xbox Series X">
+<!-- This image was found on https://www.walmart.com/ip/Microsoft-Xbox-Series-X-1TB-Console-Black/925498754 -->
+
+<img src="img/iPad-Pro.png" alt="iPad Pro">
+<!-- This image was found on https://www.apple.com/shop/buy-ipad/ipad-pro/12.9-inch-display-128gb-space-gray-wifi -->
+
+<img src="img/Apple-Watch-Series-7.png" alt="Apple Watch Series 7">
+<!-- This image was found on https://www.apple.com/shop/buy-watch/apple-watch/45mm-cellular-graphite-stainless-steel-graphite-milanese-loop-onesize -->
+
+<img src="img/Nintendo-Switch.png" alt="Nintendo-Switch">
+<!-- This image was found on https://www.nintendo.com/switch/ -->
+
+<img src="img/Galaxy-Watch-4.png" alt="Samsung Galaxy Watch 4">
+<!-- This image was found on https://www.amazon.com/SAMSUNG-Smartwatch-Bluetooth-International-Version/dp/B09D2XJ7RJ -->
+
+<img src="img/Samsung-QN65QN90AAFXZA-65-inch-QLED.png" alt="Samsung 65 inch TV">
+<!-- This image was found on https://www.amazon.com/Samsung-QN50QN90AAFXZA-Premium-Extended-Protection/dp/B0926NMM19?tag=p00935-20&ascsubtag=03EBWlX7AIJ0JK2eYIJSNQq -->
+
+<img src="img/Samsung-75-inch-Q60A-QLED.png" alt="Samsung 75 inch TV">
+<!-- This image was found on https://www.amazon.com/SAMSUNG-75-Inch-Class-QLED-Built/dp/B08SF5VR9V?ref_=Oct_d_otopr_d_172659&pd_rd_w=Z0Z2n&pf_rd_p=8f269526-780e-4f8e-9daa-56fd73859d4c&pf_rd_r=YADWR12S5CXABHY4H6GH&pd_rd_r=c2805ef9-77af-481b-a3cf-db5b2ae83f53&pd_rd_wg=12xwp&pd_rd_i=B08SF5VR9V&th=1 -->
+
+<img src="img/LG-C1-65-inch-OLED.png" alt="LG 65 inch TV">
+<!-- This image was found on https://www.amazon.com/LG-OLED65C1PUB-Alexa-Built-Smart/dp/B08WG4HKKY?ref_=Oct_d_otopr_d_172659&pd_rd_w=Z0Z2n&pf_rd_p=8f269526-780e-4f8e-9daa-56fd73859d4c&pf_rd_r=YADWR12S5CXABHY4H6GH&pd_rd_r=c2805ef9-77af-481b-a3cf-db5b2ae83f53&pd_rd_wg=12xwp&pd_rd_i=B08WG4HKKY&th=1 -->
+
+<img src="img/TCL-65-inch-6-Series-QLED.png" alt="TCL 65 inch TV">
+<!-- This image was found on https://www.amazon.com/TCL-Dolby-Vision-QLED-Smart/dp/B0885N17CC?ref_=Oct_d_otopr_d_172659&pd_rd_w=Z0Z2n&pf_rd_p=8f269526-780e-4f8e-9daa-56fd73859d4c&pf_rd_r=YADWR12S5CXABHY4H6GH&pd_rd_r=c2805ef9-77af-481b-a3cf-db5b2ae83f53&pd_rd_wg=12xwp&pd_rd_i=B0885N17CC&th=1 -->
+
+<img src="img/VIZIO-55-inch-V-series-UHD.png" alt="VIZIO 55 inch TV">
+<!-- This image was found on https://www.amazon.com/VIZIO-55-Inch-AirPlay-Chromecast-V555-J01/dp/B092Q527H1?ref_=Oct_d_onr_d_172659&pd_rd_w=bE539&pf_rd_p=9493a408-b460-43d0-bc2e-eb7b6f6520ed&pf_rd_r=YADWR12S5CXABHY4H6GH&pd_rd_r=c2805ef9-77af-481b-a3cf-db5b2ae83f53&pd_rd_wg=12xwp&pd_rd_i=B092Q527H1 -->
+
+<img src="img/OnePlus-9-Pro.png" alt="OnePlus 9 Pro">
+<!-- This image was found on https://www.amazon.com/OnePlus-Unlocked-Smartphone-Hasselblad-Wireless/dp/B07XY5DHBJ/ref=sxin_14?asc_contentid=amzn1.osa.5019347e-d782-4c5b-b292-2b5ec401737b.ATVPDKIKX0DER.en_US&asc_contenttype=article&ascsubtag=amzn1.osa.5019347e-d782-4c5b-b292-2b5ec401737b.ATVPDKIKX0DER.en_US&creativeASIN=B07XY5DHBJ&crid=KZJQVDIJY4OI&cv_ct_cx=phone&cv_ct_id=amzn1.osa.5019347e-d782-4c5b-b292-2b5ec401737b.ATVPDKIKX0DER.en_US&cv_ct_pg=search&cv_ct_we=asin&cv_ct_wn=osp-single-source-pecos-desktop&keywords=phone&linkCode=oas&pd_rd_i=B07XY5DHBJ&pd_rd_r=d354710c-bcb0-4882-970c-6ee67c0de8f4&pd_rd_w=tQheU&pd_rd_wg=zrepL&pf_rd_p=32c19f8f-2473-448f-9092-685c78d9a054&pf_rd_r=39QV9GTCVMM4RSX0WQ64&qid=1638587586&sprefix=phone%2Cundefined%2C234&sr=1-2-c26ac7f6-b43f-4741-a772-17cad7536576&tag=pcmagcontent-20 -->
+
+<img src="img/Galaxy-Z-Fold-3.png" alt="Samsung Galaxy Z Fold 3">
+<!-- This image was found on https://www.amazon.com/SAMSUNG-Factory-Unlocked-Smartphone-Foldable/dp/B097CMYTLD/ref=sxin_14?asc_contentid=amzn1.osa.5019347e-d782-4c5b-b292-2b5ec401737b.ATVPDKIKX0DER.en_US&asc_contenttype=article&ascsubtag=amzn1.osa.5019347e-d782-4c5b-b292-2b5ec401737b.ATVPDKIKX0DER.en_US&creativeASIN=B097CMYTLD&crid=KZJQVDIJY4OI&cv_ct_cx=phone&cv_ct_id=amzn1.osa.5019347e-d782-4c5b-b292-2b5ec401737b.ATVPDKIKX0DER.en_US&cv_ct_pg=search&cv_ct_we=asin&cv_ct_wn=osp-single-source-pecos-desktop&keywords=phone&linkCode=oas&pd_rd_i=B097CMYTLD&pd_rd_r=d354710c-bcb0-4882-970c-6ee67c0de8f4&pd_rd_w=tQheU&pd_rd_wg=zrepL&pf_rd_p=32c19f8f-2473-448f-9092-685c78d9a054&pf_rd_r=39QV9GTCVMM4RSX0WQ64&qid=1638587586&sprefix=phone%2Cundefined%2C234&sr=1-6-c26ac7f6-b43f-4741-a772-17cad7536576&tag=pcmagcontent-20 -->
+
+<img src="img/Motorola-One-5G-Ace.png" alt="Motorola One 5G Ace">
+<!-- This image was found on https://www.amazon.com/Motorola-battery-Unlocked-Camera-Silver/dp/B08NWD7K8H/ref=sr_1_18?crid=KZJQVDIJY4OI&keywords=phone&qid=1638587586&sprefix=phone%2Cundefined%2C234&sr=8-18 -->
+
+<img src="img/HP-Envy-17t-CG.png" alt="HP Envy 17t CG">
+<!-- This image was found on https://www.amazon.com/HP-i7-1165G7-1920x1080-Fingerprint-Bluetooth/dp/B08TV525CX/ref=sr_1_4?crid=268VLTC52V826&keywords=laptop&qid=1638588208&sprefix=laptop%2Caps%2C234&sr=8-4 -->
+
+<img src="img/Acer-Swift-X.png" alt="Acer Swift X">
+<!-- This image was found on https://www.amazon.com/Acer-SFX14-41G-R1S6-Creator-LPDDR4X-Backlit/dp/B093TK1PXF/ref=sr_1_11?crid=268VLTC52V826&keywords=laptop&qid=1638588208&sprefix=laptop%2Caps%2C234&sr=8-11 -->
+
+<img src="img/Alienware-m15-R4.png" alt="Alienware m15 R4">
+<!-- This image was found on https://www.amazon.com/Alienware-Gaming-Laptop-15-6-inch/dp/B08XFPVK3W/ref=sr_1_20?crid=268VLTC52V826&keywords=laptop&qid=1638588607&sprefix=laptop%2Caps%2C234&sr=8-20 -->
+
+<img src="img/Acer-Nitro-5.png" alt="Acer Nitro 5">
+<!-- This image was found on https://www.amazon.com/Acer-AN517-54-79L1-i7-11800H-GeForce-Display/dp/B09HJKGK5V/ref=sr_1_34?crid=268VLTC52V826&keywords=laptop&qid=1638588748&sprefix=laptop%2Caps%2C234&sr=8-34&th=1 -->

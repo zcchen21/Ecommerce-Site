@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>E-Commerce Web</title>
+    <link href='https://fonts.googleapis.com/css2?family=Chelsea+Market&family=Roboto:wght@400;700&display=swap' rel='stylesheet'>
+    <link rel="stylesheet" href="styles.css">
+    <script src="index.js"></script>
+  </head>
+  <body>
+    <div class="grid-container" id="grid-container">
+      <header class="row">
+        <div class="dropdown">
+          <button class="dropbtn" id="home-btn">E-Commerce
+            <i class="fa fa-caret-down"></i>
+          </button>
+            <label><input id="laptop" type="checkbox" name="category" value="Laptop"> Laptop</label>
+            <label><input id="smartphone" type="checkbox" name="category" value="Smart Phone"> Smartphone</label>
+            <label><input id="smartwatch" type="checkbox" name="category" value="Smart Watch"> Smartwatch</label>
+            <label><input id="gameconsole" type="checkbox" name="category" value="Game console"> Game console</label>
+            <label><input id="tv" type="checkbox" name="category" value="TV"> TV</label>
+            <label><input id="tablet" type="checkbox" name="category" value="Tablet"> Tablet</label>
+        </div>
+        <div>
+          <input id="search-bar" type="text">
+          <button id="search-btn" disabled>Search</button>
+        </div>
+        <div>
+          <button id="login-btn" class="">Log in</button>
+          <button id="logout-btn" class="hidden">Log out</button>
+          <button id="signup-btn">Sign up</button>
+          <button id="order-btn" class="hidden">Orders</button>
+        </div>
+      </header>
+      <main>
+        <article id="electronics">
+          <div class="h-center">
+            <button id="grid-btn">Grid</button>
+            <button id="list-btn">List</button>
+          </div>
+          <!-- home view -->
+          <section id="home" class="list-view">
+          </section>
+
+          <!-- product detail view -->
+          <section id='product-detail' class='list-view'>
+            <form id="feedback-form" class="hidden">
+              <label for='rating'>Rate the product(1 - 5)</label>
+              <input type='number' id='rating' name='rating' required>
+              <label for='comment'>Comment</label>
+              <input type='text' id='comment' name='comment' required>
+              <button>Submit</button>
+            </form>
+          </section>
+
+          <!-- order view -->
+          <section id='order' class='hidden'>
+            <h2>All purchases:</h2>
+            <section id="transactions"></section>
+          </section>
+
+          <!-- login view -->
+          <section id="login-view" class="hidden">
+            <h2>Login</h2>
+            <form id="login-form">
+              <label for='username'>Username</label>
+              <input type='text' id='username' name='username' required>
+              <label for='password'>Password</label>
+              <input type='text' id='password' name='password' required>
+              <button>Login</button>
+            </form>
+          </section>
+
+          <!-- sign up view -->
+          <section id="signup-view" class="hidden">
+            <h2>Sign up</h2>
+            <form id="signup-form">
+              <label for='email'>Email</label>
+              <input type='text' id='email' name='email' required>
+              <label for='username'>Username</label>
+              <input type='text' id='signup-username' name='username' required>
+              <label for='password'>Password</label>
+              <input type='text' id='signup-password' name='password' required>
+              <button>Sign up</button>
+            </form>
+          </section>
+
+          <!-- purchase view -->
+          <section id="purchase-view" class="hidden">
+            <h2 id="confirm-heading" class="hidden">Please confirm everything is correct.</h2>
+            <h2 id="success-heading" class="hidden">Your order has been placed.</h2>
+            <form id="purchase-form" class="hidden">
+              <label for='creditCardNumber'>Credit Card Number</label>
+              <input type='text' id='credit-card-number' name='creditCardNumber' required>
+              <label for='securityCode'>Security Code</label>
+              <input type='text' id='security-code' name='securityCode' required>
+              <button>Next</button>
+            </form>
+            <button id="confirm-btn" class="hidden">Confirm</button>
+          </section>
+
+          <!-- error message -->
+          <h2 id="error-message" class="hidden">Looks like something is wrong, please try again later</h2>
+        </article>
+      </main>
+      <footer class="row center">All right reserved</footer>
+    </div>
+  </body>
+</html>

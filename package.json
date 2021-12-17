@@ -1,0 +1,26 @@
+{
+  "name": "ecommerce-site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zcchen21/Ecommerce-Site.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zcchen21/Ecommerce-Site/issues"
+  },
+  "homepage": "https://github.com/zcchen21/Ecommerce-Site#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.17.1",
+    "multer": "^1.4.4",
+    "sqlite": "^4.0.23",
+    "sqlite3": "^5.0.2"
+  }
+}

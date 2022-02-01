@@ -268,17 +268,21 @@
      * @param {object} responseData - contains the data sent back from the server in text format
      */
     function processData(responseData) {
-      window.localStorage.setItem("username", id("username").value.trim());
-      id("login-btn").classList.add("hidden");
-      id("logout-btn").classList.remove("hidden");
-      id("order-btn").classList.remove("hidden");
-      id("signup-btn").classList.add("hidden");
-      switchView(id("home"),
-                 id("signup-view"),
-                 id("order"),
-                 id("login-view"),
-                 id("purchase-view"),
-                 id("product-detail"));
+      if (responseData === "Logged in successfully!") {
+        window.localStorage.setItem("username", id("username").value.trim());
+        id("login-btn").classList.add("hidden");
+        id("logout-btn").classList.remove("hidden");
+        id("order-btn").classList.remove("hidden");
+        id("signup-btn").classList.add("hidden");
+        switchView(id("home"),
+                  id("signup-view"),
+                  id("order"),
+                  id("login-view"),
+                  id("purchase-view"),
+                  id("product-detail"));
+      } else if (responseData === "Username and password does not match.") {
+        window.alert("Username and password does not match! Please try again.");
+      }
     }
   }
 

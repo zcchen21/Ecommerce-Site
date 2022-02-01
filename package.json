@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/zcchen21/Ecommerce-Site#readme",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
     "express": "^4.17.1",
     "multer": "^1.4.4",

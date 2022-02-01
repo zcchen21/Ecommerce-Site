@@ -6,6 +6,8 @@ const sqlite3 = require("sqlite3");
 const sqlite = require("sqlite");
 const cookieParser = require("cookie-parser");
 
+const bcrypt = require("bcrypt");
+
 const app = express();
 
 app.use(express.urlencoded({extended: true}));
@@ -51,7 +53,7 @@ app.get("/filters/:category", async function(req, res) {
 
 /**
  * After input, the username and password will be verified in database.
- * if verification is pass, a cookie will be gnerated.
+ * if verification is pass, a cookie will be generated.
  */
 app.post("/login", async function(req, res) {
   res.type("text");
@@ -62,9 +64,10 @@ app.post("/login", async function(req, res) {
     if (!(username && password)) {
       res.status(400).send("Missing one or more of the required params.");
     } else {
-      let info = await db.get("SELECT username, password FROM users WHERE username=?;", [username]);
+      let info = await db.get("SELECT password FROM users WHERE username=?;", [username]);
       if (info) {
-        if (info.username === username && info.password === password) {
+        let validPassword = await bcrypt.compare(password, info.password);
+        if (validPassword) {
           res.cookie("username", username);
           await db.close();
           res.send("Logged in successfully!");
@@ -226,6 +229,8 @@ app.post("/signup", async function(req, res) {
         if (userExists(allUsers, username)) {
           res.status(400).send("Username already exists.");
         } else {
+          const salt = await bcrypt.genSalt(10);
+          password = await bcrypt.hash(password, salt);
           let qry = "INSERT INTO users (username, email, password) VALUES (?, ?, ?);";
           await db.run(qry, [username, email, password]);
           await db.close();

@@ -5,6 +5,7 @@
   let currentProductId;
   let currentConfirmationNumber;
   let purchaseDate;
+  let productsInCart = [];
 
   window.addEventListener("load", init);
 
@@ -21,7 +22,7 @@
     id("search-btn").addEventListener("click", getProducts);
     id("login-btn").addEventListener("click", function() {
       switchView(id("login-view"), id("signup-view"), id("order"), id("home"),
-                 id("product-detail"), id("purchase-view"));
+                 id("product-detail"), id("purchase-view"), id("cart"));
     });
     id("login-form").addEventListener("submit", function(e) {
       e.preventDefault();
@@ -29,11 +30,13 @@
     });
     id("logout-btn").addEventListener("click", logout);
     id("order-btn").addEventListener("click", getOrders);
+    id("cart-btn").addEventListener("click", displayCart);
+    id("checkout-btn").addEventListener("click", checkOutCart);
     id("grid-btn").addEventListener("click", switchToGrid);
     id("list-btn").addEventListener("click", switchToList);
     id("signup-btn").addEventListener("click", function() {
       switchView(id("signup-view"), id("home"), id("order"), id("login-view"),
-                 id("purchase-view"), id("product-detail"));
+                 id("purchase-view"), id("product-detail"), id("cart"));
     });
     id("signup-form").addEventListener("submit", function(e) {
       e.preventDefault();
@@ -44,6 +47,7 @@
       confirm();
     })
     id("confirm-btn").addEventListener("click", finish);
+    id("edit-btn").addEventListener("click", editInfo);
     id("laptop").addEventListener("click", function() {
       if (id("laptop").checked === true) {
         checkFilter(id("laptop"), id("smartphone"), id("smartwatch"),
@@ -268,18 +272,17 @@
      * @param {object} responseData - contains the data sent back from the server in text format
      */
     function processData(responseData) {
+      productsInCart = [];
+      itemsInCart();
       if (responseData === "Logged in successfully!") {
         window.localStorage.setItem("username", id("username").value.trim());
         id("login-btn").classList.add("hidden");
         id("logout-btn").classList.remove("hidden");
         id("order-btn").classList.remove("hidden");
         id("signup-btn").classList.add("hidden");
-        switchView(id("home"),
-                  id("signup-view"),
-                  id("order"),
-                  id("login-view"),
-                  id("purchase-view"),
-                  id("product-detail"));
+        id("cart-btn").classList.remove("hidden");
+        switchView(id("home"), id("signup-view"), id("order"), id("login-view"),
+                  id("purchase-view"), id("product-detail"), id("cart"));
       } else if (responseData === "Username and password does not match.") {
         window.alert("Username and password does not match! Please try again.");
       }
@@ -317,9 +320,10 @@
       id("login-btn").classList.remove("hidden");
       id("logout-btn").classList.add("hidden");
       id("order-btn").classList.add("hidden");
+      id("cart-btn").classList.add("hidden");
       id("signup-btn").classList.remove("hidden");
       switchView(id("home"), id("signup-view"), id("order"), id("login-view"),
-                 id("purchase-view"), id("product-detail"));
+                 id("purchase-view"), id("product-detail"), id("cart"));
       id("username").value = "";
       id("password").value = "";
     }
@@ -360,7 +364,102 @@
       id("signup-username").value = "";
       id("signup-password").value = "";
       switchView(id("home"), id("signup-view"), id("order"), id("login-view"),
+                 id("purchase-view"), id("product-detail"), id("cart"));
+    }
+  }
+
+  function displayCart() {
+    // let username = window.localStorage.getItem("username");
+    let username = document.cookie.split(';').find(row => row.trim().startsWith('username=')).split('=')[1];
+    if (username == undefined) {
+      window.alert("Need to sign in to continue!");
+    }
+    fetch("/cart/" + username)
+      .then(statusCheck)
+      .then(resp => resp.json())
+      .then(processData)
+      .catch(handleError);
+
+    /**
+     * Checks the status of the request to the server to see if it is successful or not.
+     * @param {object} response - contains the information of the request to the server
+     * @returns {object} returns information about the request if it is successful
+     */
+    async function statusCheck(response) {
+      if (!response.ok) {
+        throw new Error(await response.json());
+      }
+      return response;
+    }
+
+    /**
+     * Processes the data from the server and displays the previous transactions of the user
+     * @param {object} responseData - contains the data sent back from the server in JSON format
+     */
+    function processData(responseData) {
+      while (id("cart-items").firstChild) {
+        id("cart-items").removeChild(id("cart-items").firstChild);
+      }
+      switchView(id("cart"), id("order"), id("signup-view"), id("home"), id("login-view"),
                  id("purchase-view"), id("product-detail"));
+      for (let i = 0; i < responseData.length; i++) {
+        let card = createAndAppend("article", id("cart-items"));
+        card.id = responseData[i].product_id;
+        card.classList.add("card-list");
+        let image = createAndAppend("img", card);
+        image.src = "img/" + responseData[i].name.toLowerCase().replaceAll(" ", "-") + ".png";
+        image.alt = "image of " + responseData[i].name;
+        let content = createAndAppend("div", card);
+        let name = createAndAppend("p", content);
+        name.textContent = responseData[i].name;
+        name.classList.add("product-name");
+        name.classList.add("bold");
+        let price = createAndAppend("p", content);
+        price.textContent = "$" + responseData[i].price;
+        let description = createAndAppend("p", content);
+        description.textContent = responseData[i].description;
+        let availability = createAndAppend("p", content);
+        availability.textContent = responseData[i].availability;
+        if (availability.textContent === "In Stock") {
+          availability.classList.add("green");
+        } else {
+          availability.classList.add("red");
+        }
+      }
+    }
+  }
+
+  function itemsInCart() {
+    let username = document.cookie.split(';').find(row => row.trim().startsWith('username=')).split('=')[1];
+    if (username == undefined) {
+      window.alert("Need to sign in to continue!");
+    }
+    fetch("/cart/" + username)
+      .then(statusCheck)
+      .then(resp => resp.json())
+      .then(processData)
+      .catch(handleError);
+
+    /**
+     * Checks the status of the request to the server to see if it is successful or not.
+     * @param {object} response - contains the information of the request to the server
+     * @returns {object} returns information about the request if it is successful
+     */
+    async function statusCheck(response) {
+      if (!response.ok) {
+        throw new Error(await response.json());
+      }
+      return response;
+    }
+
+    /**
+     * Processes the data from the server and displays the previous transactions of the user
+     * @param {object} responseData - contains the data sent back from the server in JSON format
+     */
+    function processData(responseData) {
+      for (let i = 0; i < responseData.length; i++) {
+        productsInCart.push(responseData[i].product_id);
+      }
     }
   }
 
@@ -368,7 +467,11 @@
    * Allows the user to see their previous orders if they are logged in
    */
   function getOrders() {
-    let username = window.localStorage.getItem("username");
+    // let username = window.localStorage.getItem("username");
+    let username = document.cookie.split(';').find(row => row.trim().startsWith('username=')).split('=')[1];
+    if (username == undefined) {
+      window.alert("Need to sign in to continue!");
+    }
     fetch("/orders/" + username)
       .then(statusCheck)
       .then(resp => resp.json())
@@ -396,7 +499,7 @@
         id("transactions").removeChild(id("transactions").firstChild);
       }
       switchView(id("order"), id("signup-view"), id("home"), id("login-view"),
-                 id("purchase-view"), id("product-detail"));
+                 id("purchase-view"), id("product-detail"), id("cart"));
       for (let i = 0; i < responseData.length; i++) {
         let card = createAndAppend("article", id("transactions"));
         card.classList.add("card-list");
@@ -412,14 +515,15 @@
         confirmatioNumber.textContent = "Confirmation Number: " + responseData[i].confirmation_number;
         let date = createAndAppend("p", content);
         date.textContent = "Purchase date: " + responseData[i].date;
+      }
     }
-  }
   }
 
   /**
    * Handles and reports to the client any error that occurs during the fetch process
    */
-  function handleError() {
+  function handleError(error) {
+    console.log(error);
     id("error-message").classList.remove("hidden");
     let buttons = id("grid-container").querySelectorAll("button");
     for (let i = 0; i < buttons.length; i++) {
@@ -449,7 +553,7 @@
    */
   function displaySearchedProducts(responseData) {
     switchView(id("home"), id("product-detail"), id("order"), id("login-view"),
-               id("purchase-view"), id("signup-view"));
+               id("purchase-view"), id("signup-view"), id("cart"));
     let matchedID = [];
     for (let i = 0; i < responseData.length; i++) {
       matchedID.push(responseData[i].product_id);
@@ -484,6 +588,7 @@
    * Displays the info of a single product in list view
    * @param {object} responseData - contains the data sent back from the server in JSON format
    * @param {object} card - the DOM object that consists of info of a single product
+   * @returns
    */
   function singleProductList(responseData, card) {
     let image = createAndAppend("img", card);
@@ -518,7 +623,7 @@
    */
   function getProductDetail(productId) {
     switchView(id("product-detail"), id("home"), id("order"), id("login-view"),
-               id("purchase-view"), id("signup-view"));
+               id("purchase-view"), id("signup-view"), id("cart"));
     fetch("/products/" + productId)
       .then(statusCheck)
       .then(resp => resp.json())
@@ -543,8 +648,9 @@
      */
     function processData(responseData) {
       currentProductId = productId;
+      console.log("curr product id: " + currentProductId);
       switchView(id("product-detail"), id("home"), id("order"), id("login-view"),
-                 id("purchase-view"), id("signup-view"));
+                 id("purchase-view"), id("signup-view"), id("cart"));
       id("product-detail").removeChild(id("product-detail").firstChild);
       let card = document.createElement("article");
       id("product-detail").prepend(card);
@@ -553,25 +659,123 @@
       let buyBtn = createAndAppend("button", card);
       buyBtn.textContent = "Buy";
       buyBtn.addEventListener("click", buy);
+      if (responseData.availability === "Out of Stock") {
+        buyBtn.disabled = true;
+      }
+      let addToCartBtn = createAndAppend("button", card);
+      addToCartBtn.textContent = "Add to cart";
+      addToCartBtn.addEventListener("click", addToCart);
+      if (responseData.availability === "Out of Stock") {
+        addToCartBtn.disabled = true;
+      }
+      console.log("cart products: " + productsInCart);
+      for (let i = 0; i < productsInCart.length; i++) {
+        if (productsInCart[i] === currentProductId) {
+          addToCartBtn.disabled = true;
+          addToCartBtn.textContent = "Added to cart";
+          break;
+        }
+      }
       let rateBtn = createAndAppend("button", card);
       rateBtn.textContent = "Rate product";
       rateBtn.addEventListener("click", function() {
-        id("feedback-form").classList.remove("hidden");
+        if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
+          window.alert("Need to sign in to continue!");
+        } else {
+          id("feedback-form").classList.remove("hidden");
+        }
       });
     }
   }
 
-  /**
-   * Allows the user to buy a product
-   */
-  function buy() {
-    let data = new FormData();
-    data.append("productId", currentProductId);
-    fetch("/buy", {method: "POST", body: data})
-      .then(statusCheck)
-      .then(resp => resp.json())
-      .then(processData)
-      .catch(handleError);
+  function addToCart() {
+    if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
+      window.alert("Need to sign in to continue!");
+    } else {
+      let data = new FormData();
+      data.append("productId", currentProductId);
+      fetch("/cart/add", {method: "POST", body: data})
+        .then(statusCheck)
+        .then(resp => resp.text())
+        .then(processData)
+        .catch(handleError);
+    }
+
+    /**
+     * Checks the status of the request to the server to see if it is successful or not.
+     * @param {object} response - contains the information of the request to the server
+     * @returns {object} returns information about the request if it is successful
+     */
+    async function statusCheck(response) {
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return response;
+    }
+
+    /**
+     * Processes the data and allows the user to buy the product selected if the user is logged in
+     * @param {object} responseData - contains the data sent back from the server in JSON format
+     */
+    function processData(responseData) {
+      productsInCart.push(currentProductId);
+    }
+  }
+
+  function removeFromCart(productId) {
+    if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
+      window.alert("Need to sign in to continue!");
+    } else {
+      let data = new FormData();
+      data.append("productId", productId);
+      fetch("/cart/remove", {method: "POST", body: data})
+        .then(statusCheck)
+        .then(resp => resp.text())
+        .then(processData)
+        .catch(handleError);
+    }
+
+    /**
+     * Checks the status of the request to the server to see if it is successful or not.
+     * @param {object} response - contains the information of the request to the server
+     * @returns {object} returns information about the request if it is successful
+     */
+    async function statusCheck(response) {
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return response;
+    }
+
+    /**
+     * Processes the data and allows the user to buy the product selected if the user is logged in
+     * @param {object} responseData - contains the data sent back from the server in JSON format
+     */
+    function processData(responseData) {
+      productsInCart.splice(productsInCart.indexOf(productId));
+      console.log(productsInCart);
+    }
+  }
+
+  function checkOutCart() {
+    if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
+      window.alert("Need to sign in to continue!");
+    } else {
+      for (let i = 0; i < productsInCart.length; i++) {
+        currentProductId = productsInCart[i];
+        // let data = new FormData();
+        // data.append("productId", productsInCart[i]);
+        // fetch("/buy", {method: "POST", body: data})
+        //   .then(statusCheck)
+        //   .then(resp => resp.json())
+        //   .then(processData)
+        //   .catch(handleError);
+        buy();
+      }
+      for (let i = 0; i < productsInCart.length; i++) {
+        removeFromCart(productsInCart[i]);
+      }
+    }
 
     /**
      * Checks the status of the request to the server to see if it is successful or not.
@@ -591,7 +795,7 @@
      */
     function processData(responseData) {
       switchView(id("purchase-view"), id("home"), id("order"), id("login-view"),
-                 id("product-detail"), id("signup-view"));
+                 id("product-detail"), id("signup-view"), id("cart"));
       id("success-heading").classList.add("hidden");
       if (id("orderInfo-card")) {
         id("purchase-view").removeChild(id("orderInfo-card"));
@@ -612,6 +816,66 @@
       let price = createAndAppend("p", content);
       price.textContent = "$" + responseData.price;
       id("purchase-form").classList.remove("hidden");
+      id("paymentInfo-card").classList.add("hidden");
+    }
+  }
+
+  /**
+   * Allows the user to buy a product
+   */
+  function buy() {
+    if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
+      window.alert("Need to sign in to continue!");
+    } else {
+      let data = new FormData();
+      data.append("productId", currentProductId);
+      fetch("/buy", {method: "POST", body: data})
+        .then(statusCheck)
+        .then(resp => resp.json())
+        .then(processData)
+        .catch(handleError);
+    }
+
+    /**
+     * Checks the status of the request to the server to see if it is successful or not.
+     * @param {object} response - contains the information of the request to the server
+     * @returns {object} returns information about the request if it is successful
+     */
+    async function statusCheck(response) {
+      if (!response.ok) {
+        throw new Error(await response.json());
+      }
+      return response;
+    }
+
+    /**
+     * Processes the data and allows the user to buy the product selected if the user is logged in
+     * @param {object} responseData - contains the data sent back from the server in JSON format
+     */
+    function processData(responseData) {
+      switchView(id("purchase-view"), id("home"), id("order"), id("login-view"),
+                 id("product-detail"), id("signup-view"), id("cart"));
+      id("success-heading").classList.add("hidden");
+      if (id("orderInfo-card")) {
+        id("purchase-view").removeChild(id("orderInfo-card"));
+      }
+      let card = document.createElement("article");
+      id("purchase-view").prepend(card);
+      card.classList.add("card-list");
+      card.id = "product-card";
+      let image = createAndAppend("img", card);
+      image.src = "img/" + responseData.name.toLowerCase().replaceAll(" ", "-") + ".png";
+      image.alt = "image of " + responseData.name;
+      let content = createAndAppend("div", card);
+      let name = createAndAppend("p", content);
+      name.textContent = responseData.name;
+      name.classList.add("product-name");
+      let description = createAndAppend("p", content);
+      description.textContent = responseData.descriptions;
+      let price = createAndAppend("p", content);
+      price.textContent = "$" + responseData.price;
+      id("purchase-form").classList.remove("hidden");
+      id("paymentInfo-card").classList.add("hidden");
     }
   }
 
@@ -621,12 +885,15 @@
    */
   function confirm() {
     let data = new FormData();
-    data.append("productId", currentProductId);
+    data.append("streetAddress", id("street-address").value);
+    data.append("city", id("city").value);
+    data.append("state", id("state").value);
+    data.append("postalCode", id("postal-code").value);
     data.append("creditCardNumber", id("credit-card-number").value);
     data.append("securityCode", id("security-code").value);
     fetch("/confirm", {method: "POST", body: data})
       .then(statusCheck)
-      .then(resp => resp.json())
+      .then(resp => resp.text())
       .then(processData)
       .catch(handleError);
 
@@ -649,17 +916,15 @@
     function processData(responseData) {
       id("confirm-heading").classList.remove("hidden");
       id("purchase-form").classList.add("hidden");
-      let paymentInfo = createAndAppend("article", id("purchase-view"));
-      paymentInfo.classList.add("card-list");
-      paymentInfo.id = "paymentInfo-card";
-      let content = createAndAppend("div", paymentInfo);
-      let cardNumber = createAndAppend("p", content);
-      cardNumber.textContent = "Credit Card Number: " + id("credit-card-number").value;
-      let securityCode = createAndAppend("p", content);
-      securityCode.textContent = "Security Code: " + id("security-code").value;
+      id("paymentInfo-card").classList.remove("hidden");
+      id("street-address-info").textContent = id("street-address").value;
+      id("city-info").textContent = id("city").value;
+      id("state-info").textContent = id("state").value;
+      id("postal-code-info").textContent = id("postal-code").value;
+      id("credit-card-number-info").textContent = id("credit-card-number").value;
+      id("security-code-info").textContent = id("security-code").value;
       id("confirm-btn").classList.remove("hidden");
-      currentConfirmationNumber = responseData.confirmation_number;
-      purchaseDate = responseData.date;
+      id("edit-btn").classList.remove("hidden");
     }
   }
 
@@ -667,21 +932,57 @@
    * Displays to the user that the transaction is successful
    */
   function finish() {
-    id("credit-card-number").value = "";
-    id("security-code").value = "";
-    id("purchase-view").removeChild(id("product-card"));
-    id("purchase-view").removeChild(id("paymentInfo-card"));
-    id("confirm-heading").classList.add("hidden");
-    id("success-heading").classList.remove("hidden");
-    let orderInfo = createAndAppend("article", id("purchase-view"));
-    orderInfo.classList.add("card-list");
-    orderInfo.id = "orderInfo-card";
-    let content = createAndAppend("div", orderInfo);
-    let confirmationNumber = createAndAppend("p", content);
-    confirmationNumber.textContent = "Confirmation Number: " + currentConfirmationNumber;
-    let date = createAndAppend("p", content);
-    date.textContent = "Purchase date: " + purchaseDate;
+    let data = new FormData();
+    data.append("productId", currentProductId);
+    fetch("/finish", {method: "POST", body: data})
+      .then(statusCheck)
+      .then(resp => resp.json())
+      .then(processData)
+      .catch(handleError);
+
+    /**
+     * Checks the status of the request to the server to see if it is successful or not.
+     * @param {object} response - contains the information of the request to the server
+     * @returns {object} returns information about the request if it is successful
+     */
+    async function statusCheck(response) {
+      if (!response.ok) {
+        throw new Error(await response.json());
+      }
+      return response;
+    }
+    function processData(responseData) {
+      id("street-address").value = "";
+      id("city").value = "";
+      id("state").value = "";
+      id("postal-code").value = "";
+      id("credit-card-number").value = "";
+      id("security-code").value = "";
+      id("purchase-view").removeChild(id("product-card"));
+      id("purchase-view").removeChild(id("paymentInfo-card"));
+      id("confirm-heading").classList.add("hidden");
+      id("success-heading").classList.remove("hidden");
+      currentConfirmationNumber = responseData.confirmation_number;
+      purchaseDate = responseData.date;
+      let orderInfo = createAndAppend("article", id("purchase-view"));
+      orderInfo.classList.add("card-list");
+      orderInfo.id = "orderInfo-card";
+      let content = createAndAppend("div", orderInfo);
+      let confirmationNumber = createAndAppend("p", content);
+      confirmationNumber.textContent = "Confirmation Number: " + currentConfirmationNumber;
+      let date = createAndAppend("p", content);
+      date.textContent = "Purchase date: " + purchaseDate;
+      id("confirm-btn").classList.add("hidden");
+      id("edit-btn").classList.add("hidden");
+    }
+  }
+
+  function editInfo() {
+    id("purchase-form").classList.remove("hidden");
     id("confirm-btn").classList.add("hidden");
+    id("edit-btn").classList.add("hidden");
+    id("confirm-heading").classList.remove("hidden");
+    id("paymentInfo-card").classList.add("hidden");
   }
 
   /**
@@ -778,13 +1079,14 @@
    * @param {object} hide4 - fourth view we want to hide
    * @param {object} hide5 - fifth view we want to hide
    */
-  function switchView(show, hide1, hide2, hide3, hide4, hide5) {
+  function switchView(show, hide1, hide2, hide3, hide4, hide5, hide6) {
     show.classList.remove("hidden");
     hide1.classList.add("hidden");
     hide2.classList.add("hidden");
     hide3.classList.add("hidden");
     hide4.classList.add("hidden");
     hide5.classList.add("hidden");
+    hide6.classList.add("hidden");
   }
 
   /**
@@ -792,7 +1094,7 @@
    */
   function home() {
     switchView(id("home"), id("product-detail"), id("order"), id("login-view"),
-               id("purchase-view"), id("signup-view"));
+               id("purchase-view"), id("signup-view"), id("cart"));
     let cards = document.querySelectorAll("#home article");
     for (let i = 0; i < cards.length; i++) {
       cards[i].classList.remove("hidden");

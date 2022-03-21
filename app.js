@@ -63,20 +63,19 @@ app.post("/login", async function(req, res) {
     let password = req.body.password;
     if (!(username && password)) {
       res.status(400).send("Missing one or more of the required params.");
-    } else {
-      let info = await db.get("SELECT password FROM users WHERE username=?;", [username]);
-      if (info) {
-        let validPassword = await bcrypt.compare(password, info.password);
-        if (validPassword) {
-          res.cookie("username", username);
-          await db.close();
-          res.send("Logged in successfully!");
-        } else {
-          res.send("Username and password does not match.");
-        }
+    }
+    let info = await db.get("SELECT password FROM users WHERE username=?;", [username]);
+    if (info) {
+      let validPassword = await bcrypt.compare(password, info.password);
+      if (validPassword) {
+        res.cookie("username", username);
+        await db.close();
+        res.send("Logged in successfully!");
       } else {
-        res.status(400).send("Username does not exist.");
+        res.send("Username and password does not match.");
       }
+    } else {
+      res.status(400).send("Username does not exist.");
     }
   } catch (error) {
     res.status(500).send("An error occurred on the server. Try again later.");
@@ -164,42 +163,53 @@ app.post("/buy", async function(req, res) {
  */
 app.post("/confirm", async function(req, res) {
   try {
+    let streetAddress = req.body.streetAddress;
+    let city = req.body.city;
+    let state = req.body.state;
+    let postalCode = req.body.postalCode;
+    let creditCardNumber = req.body.creditCardNumber;
+    let securityCode = req.body.securityCode;
+    if (!(creditCardNumber && securityCode && streetAddress && city && state && postalCode)) {
+      res.status(400).send("Missing one or more of the required params.");
+    }
+    let validCardNumber = creditCardNumber.match(/^[0-9]{16}$/);
+    let validSecurityCode = securityCode.match(/^[0-9]{3}$/);
+    if (validCardNumber === null) {
+      res.status(400).send("Invalid credit card number.");
+    }
+    if (validSecurityCode === null) {
+      res.status(400).send("Invalid security code.");
+    }
+    res.type("text");
+    res.status(200).send("Valid Inputs.");
+  } catch (error) {
+    res.type("text");
+    res.status(500).send("An error occurred on the server. Try again later.");
+  }
+});
+
+app.post("/finish", async function(req, res) {
+  try {
     let currentUser = req.cookies.username;
     let db = await getDBConnection();
     let productId = req.body.productId;
-    let creditCardNumber = req.body.creditCardNumber;
-    let securityCode = req.body.securityCode;
-    if (!(creditCardNumber && securityCode)) {
-      res.status(400).send("Missing one or more of the required params.");
+    let productAvailabilityQry = "SELECT availability, capacity FROM products WHERE product_id=?";
+    let productAvailabilityInfo = await db.get(productAvailabilityQry, [productId]);
+    let updateCapacityQry = "UPDATE products SET capacity=?, availability=? WHERE product_id=?";
+    let newCapacity = parseInt(productAvailabilityInfo.capacity) - 1;
+    let newAvailability;
+    if (newCapacity === 0) {
+      newAvailability = "Out of Stock";
     } else {
-      let validCardNumber = creditCardNumber.match(/^[0-9]{16}$/);
-      let validSecurityCode = securityCode.match(/^[0-9]{3}$/);
-      if (validCardNumber === null) {
-        res.status(400).send("Invalid credit card number.");
-      } else {
-        if (validSecurityCode === null) {
-          res.status(400).send("Invalid security code.");
-        } else {
-          let productAvailabilityQry = "SELECT availability, capacity FROM products WHERE product_id=?";
-          let productAvailabilityInfo = await db.get(productAvailabilityQry, [productId]);
-          let updateCapacityQry = "UPDATE products SET capacity=?, availability=? WHERE product_id=?";
-          let newCapacity = parseInt(productAvailabilityInfo.capacity) - 1;
-          let newAvailability;
-          if (newCapacity === 0) {
-            newAvailability = "Out of Stock";
-          } else {
-            newAvailability = productAvailabilityInfo.availability;
-          }
-          await db.run(updateCapacityQry, [String(newCapacity), newAvailability, productId]);
-          let transactionQry = "INSERT INTO transactions (username, product_id) VALUES (?, ?);";
-          await db.run(transactionQry, [currentUser, productId]);
-          let confirmationQry = "SELECT confirmation_number, date FROM transactions WHERE username=? AND product_id=?";
-          let confirmationInfo = await db.get(confirmationQry, [currentUser, productId]);
-          await db.close();
-          res.json(confirmationInfo);
-        }
-      }
+      newAvailability = productAvailabilityInfo.availability;
     }
+    await db.run(updateCapacityQry, [String(newCapacity), newAvailability, productId]);
+    let transactionQry = "INSERT INTO transactions (username, product_id) VALUES (?, ?);";
+    await db.run(transactionQry, [currentUser, productId]);
+    let confirmationQry = "SELECT confirmation_number, date FROM transactions WHERE username=? AND product_id=?";
+    let confirmationInfo = await db.get(confirmationQry, [currentUser, productId]);
+    await db.close();
+    res.json(confirmationInfo);
   } catch (error) {
     res.type("text");
     res.status(500).send("An error occurred on the server. Try again later.");
@@ -249,13 +259,12 @@ app.post("/signup", async function(req, res) {
  */
 app.get("/orders/:user", async function(req, res) {
   try {
-    let currentUser = req.cookies.username;
-    if (currentUser === undefined) {
+    let user = req.params.user;
+    if (user === undefined) {
       res.type("text");
       res.status(400).send("User is not logged in");
     } else {
       let db = await getDBConnection();
-      let user = req.params.user;
       let qry = "SELECT t.confirmation_number, t.product_id, p.name, t.date \
                 FROM transactions t, products p \
                 WHERE t.product_id = p.product_id AND t.username = ?";
@@ -263,6 +272,66 @@ app.get("/orders/:user", async function(req, res) {
       await db.close();
       res.json(rows);
     }
+  } catch (error) {
+    res.type("text");
+    res.status(500).send("An error occurred on the server. Try again later.");
+  }
+});
+
+app.get("/cart/:user", async function(req, res) {
+  try {
+    let user = req.params.user;
+    if (user === undefined) {
+      res.type("text");
+      res.status(400).send("User is not logged in");
+    }
+    let db = await getDBConnection();
+    let qry = "SELECT p.product_id, p.price, p.name, p.descriptions, p.availability \
+              FROM shopping_cart s, products p \
+              WHERE s.product_id = p.product_id AND s.username = ?";
+    let rows = await db.all(qry, [user]);
+    await db.close();
+    res.json(rows);
+  } catch (error) {
+    res.type("text");
+    res.status(500).send("An error occurred on the server. Try again later.");
+  }
+});
+
+app.post("/cart/add", async function(req, res) {
+  try {
+    let user = req.cookies.username;
+    // console.log(user);
+    if (user === undefined) {
+      res.type("text");
+      res.status(400).send("User is not logged in");
+    }
+    let productId = req.body.productId;
+    let db = await getDBConnection();
+    let qry = "INSERT INTO shopping_cart (username, product_id) VALUES(?, ?);";
+    await db.run(qry, [user, productId]);
+    await db.close();
+    res.type("text").send("Added to cart successfully.");
+  } catch (error) {
+    res.type("text");
+    res.status(500).send("An error occurred on the server. Try again later.");
+  }
+});
+
+app.post("/cart/remove", async function(req, res) {
+  try {
+    let user = req.cookies.username;
+    // console.log(user);
+    if (user === undefined) {
+      res.type("text");
+      res.status(400).send("User is not logged in");
+    }
+    let productId = req.body.productId;
+    let db = await getDBConnection();
+    let qry = "DELETE FROM shopping_cart WHERE username = ? AND product_id = ?;";
+    await db.run(qry, [user, productId]);
+    await db.close();
+    res.type("text").send("Removed item from cart successfully.");
   } catch (error) {
     res.type("text");
     res.status(500).send("An error occurred on the server. Try again later.");
@@ -286,15 +355,14 @@ app.post("/feedback", async function(req, res) {
       if (!(rating && comment)) {
         res.type("text");
         res.status(400).send("Missing one or more of the required params.");
-      } else {
-        let qry = "INSERT INTO reviews (username, product_id, comment, rating) \
-                   VALUES (?, ?, ?, ?);";
-        await db.run(qry, [currentUser, productId, comment, rating]);
-        let infoQry = "SELECT * FROM reviews WHERE product_id=? AND username=?";
-        let rows = await db.get(infoQry, [productId, currentUser]);
-        await db.close();
-        res.json(rows);
       }
+      let qry = "INSERT INTO reviews (username, product_id, comment, rating) \
+                  VALUES (?, ?, ?, ?);";
+      await db.run(qry, [currentUser, productId, comment, rating]);
+      let infoQry = "SELECT * FROM reviews WHERE product_id=? AND username=?";
+      let rows = await db.get(infoQry, [productId, currentUser]);
+      await db.close();
+      res.json(rows);
     }
   } catch (error) {
     res.type("text");

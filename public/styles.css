@@ -118,6 +118,17 @@ input {
   border-radius: 8px;
 }
 
+#cart-btn {
+  background-color: #888531;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-size: 17px;
+  padding: 10px 23px;
+  text-shadow: 0px 1px 0px #2d2766;
+  border-radius: 8px;
+}
+
 #search-btn {
   font-size: 11px;
   padding: 0px 15px;

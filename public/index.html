@@ -26,10 +26,11 @@
           <button id="search-btn" disabled>Search</button>
         </div>
         <div>
-          <button id="login-btn" class="">Log in</button>
-          <button id="logout-btn" class="hidden">Log out</button>
+          <button id="login-btn">Log in</button>
           <button id="signup-btn">Sign up</button>
+          <button id="cart-btn" class="hidden">Cart</button>
           <button id="order-btn" class="hidden">Orders</button>
+          <button id="logout-btn" class="hidden">Log out</button>
         </div>
       </header>
       <main>
@@ -57,6 +58,13 @@
           <section id='order' class='hidden'>
             <h2>All purchases:</h2>
             <section id="transactions"></section>
+          </section>
+
+           <!-- shopping cart view -->
+           <section id='cart' class='hidden'>
+            <h2>Shopping cart:</h2>
+            <section id="cart-items"></section>
+            <button id="checkout-btn">Check out</button>
           </section>
 
           <!-- login view -->
@@ -90,13 +98,30 @@
             <h2 id="confirm-heading" class="hidden">Please confirm everything is correct.</h2>
             <h2 id="success-heading" class="hidden">Your order has been placed.</h2>
             <form id="purchase-form" class="hidden">
+              <label for='streetAddress'>Street Address</label>
+              <input type='text' id='street-address' name='streetAddress' required>
+              <label for='city'>City</label>
+              <input type='text' id='city' name='city' required>
+              <label for='state'>State</label>
+              <input type='text' id='state' name='state' required>
+              <label for='postalCode'>Postal Code</label>
+              <input type='number' id='postal-code' name='postalCode' required>
               <label for='creditCardNumber'>Credit Card Number</label>
-              <input type='password' id='credit-card-number' name='creditCardNumber' required>
+              <input type='number' id='credit-card-number' name='creditCardNumber' required>
               <label for='securityCode'>Security Code</label>
               <input type='password' id='security-code' name='securityCode' required>
               <button>Next</button>
             </form>
             <button id="confirm-btn" class="hidden">Confirm</button>
+            <button id="edit-btn" class="hidden">Edit</button>
+            <article id="paymentInfo-card" class="hidden">
+              <p><strong>Street Address:  </strong><span id="street-address-info"></span></p>
+              <p><strong>City:  </strong><span id="city-info"></span></p>
+              <p><strong>State:  </strong><span id="state-info"></span></p>
+              <p><strong>Postal Code:  </strong><span id="postal-code-info"></span></p>
+              <p><strong>Credit Card Number:  </strong><span id="credit-card-number-info"></span></p>
+              <p><strong>Security Code:  </strong><span id="security-code-info"></span></p>
+            </article>
           </section>
 
           <!-- error message -->

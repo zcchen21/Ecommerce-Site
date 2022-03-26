@@ -3,3 +3,8 @@ node_modules
 !/.gitignore
 *.sql
 *.db
+.env
+public/checkout.html
+public/success.html
+public/cancel.html
+server.js

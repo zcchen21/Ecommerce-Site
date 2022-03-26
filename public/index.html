@@ -2,16 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>E-Commerce Web</title>
+    <title>eCommerce Web</title>
     <link href='https://fonts.googleapis.com/css2?family=Chelsea+Market&family=Roboto:wght@400;700&display=swap' rel='stylesheet'>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://js.stripe.com/v3/">
+    </script>
     <script src="index.js"></script>
   </head>
   <body>
     <div class="grid-container" id="grid-container">
       <header class="row">
         <div class="dropdown">
-          <button class="dropbtn" id="home-btn">E-Commerce
+          <button class="dropbtn" id="home-btn">HOME
             <i class="fa fa-caret-down"></i>
           </button>
             <label><input id="laptop" type="checkbox" name="category" value="Laptop"> Laptop</label>
@@ -28,7 +30,7 @@
         <div>
           <button id="login-btn">Log in</button>
           <button id="signup-btn">Sign up</button>
-          <button id="cart-btn" class="hidden">Cart</button>
+          <button id="cart-btn">Cart</button>
           <button id="order-btn" class="hidden">Orders</button>
           <button id="logout-btn" class="hidden">Log out</button>
         </div>
@@ -62,9 +64,11 @@
 
            <!-- shopping cart view -->
            <section id='cart' class='hidden'>
-            <h2>Shopping cart:</h2>
-            <section id="cart-items"></section>
-            <button id="checkout-btn">Check out</button>
+             <form action="/checkout" method="POST">
+              <h2>Shopping cart:</h2>
+              <section id="cart-items"></section>
+              <button id="checkout-btn" class="hidden">Check out</button>
+            </form>
           </section>
 
           <!-- login view -->
@@ -128,7 +132,7 @@
           <h2 id="error-message" class="hidden">Looks like something is wrong, please try again later</h2>
         </article>
       </main>
-      <footer class="row center">All right reserved</footer>
+      <footer class="row center">All rights reserved</footer>
     </div>
   </body>
 </html>

@@ -5,7 +5,6 @@
   let currentProductId;
   let currentConfirmationNumber;
   let purchaseDate;
-  let productsInCart = [];
 
   window.addEventListener("load", init);
 
@@ -16,6 +15,7 @@
    * Above functions will relate to some functions to request the product info.
    */
   function init() {
+    getStripeKey();
     getProducts();
     id("home-btn").addEventListener("click", home);
     id("search-bar").addEventListener("input", enableSearchBtn);
@@ -31,7 +31,33 @@
     id("logout-btn").addEventListener("click", logout);
     id("order-btn").addEventListener("click", getOrders);
     id("cart-btn").addEventListener("click", displayCart);
-    id("checkout-btn").addEventListener("click", checkOutCart);
+
+    id("checkout-btn").addEventListener("click", function() {
+      let cart = [];
+      for (let i = 0; i < window.sessionStorage.length; i++) {
+        let productId = window.sessionStorage.key(i);
+        cart.push(productId);
+      }
+      fetch("/cart/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "cart": cart
+        })
+      }).then(res => {
+        if (res.ok) {
+          return res.json();
+        }
+        return res.json().then(json => Promise.reject(json));
+      }).then(({ url }) => {
+        finish();
+        window.location = url;
+      }).catch(e => {
+        console.error(e);
+      })
+    });
     id("grid-btn").addEventListener("click", switchToGrid);
     id("list-btn").addEventListener("click", switchToList);
     id("signup-btn").addEventListener("click", function() {
@@ -112,6 +138,32 @@
       e.preventDefault();
       feedback();
     })
+  }
+
+  let stripePublishableKey;
+
+  function getStripeKey() {
+    fetch("/stripe/key")
+      .then(statusCheck)
+      .then(resp => resp.json())
+      .then(processData)
+      .catch(handleError);
+
+    /**
+     * Checks the status of the request to the server to see if it is successful or not.
+     * @param {object} response - contains the information of the request to the server
+     * @returns {object} returns information about the request if it is successful
+     */
+    async function statusCheck(response) {
+      if (!response.ok) {
+        throw new Error(await response.json());
+      }
+      return response;
+    }
+
+    function processData(responseData) {
+      stripePublishableKey = responseData.publishableKey;
+    }
   }
 
   /**
@@ -272,15 +324,13 @@
      * @param {object} responseData - contains the data sent back from the server in text format
      */
     function processData(responseData) {
-      productsInCart = [];
-      itemsInCart();
+      getItemsInCart();
       if (responseData === "Logged in successfully!") {
         window.localStorage.setItem("username", id("username").value.trim());
         id("login-btn").classList.add("hidden");
         id("logout-btn").classList.remove("hidden");
         id("order-btn").classList.remove("hidden");
         id("signup-btn").classList.add("hidden");
-        id("cart-btn").classList.remove("hidden");
         switchView(id("home"), id("signup-view"), id("order"), id("login-view"),
                   id("purchase-view"), id("product-detail"), id("cart"));
       } else if (responseData === "Username and password does not match.") {
@@ -320,7 +370,7 @@
       id("login-btn").classList.remove("hidden");
       id("logout-btn").classList.add("hidden");
       id("order-btn").classList.add("hidden");
-      id("cart-btn").classList.add("hidden");
+      // id("cart-btn").classList.add("hidden");
       id("signup-btn").classList.remove("hidden");
       switchView(id("home"), id("signup-view"), id("order"), id("login-view"),
                  id("purchase-view"), id("product-detail"), id("cart"));
@@ -369,12 +419,19 @@
   }
 
   function displayCart() {
-    // let username = window.localStorage.getItem("username");
-    let username = document.cookie.split(';').find(row => row.trim().startsWith('username=')).split('=')[1];
-    if (username == undefined) {
-      window.alert("Need to sign in to continue!");
+    while (id("cart-items").firstChild) {
+      id("cart-items").removeChild(id("cart-items").firstChild);
     }
-    fetch("/cart/" + username)
+    switchView(id("cart"), id("order"), id("signup-view"), id("home"), id("login-view"),
+                id("purchase-view"), id("product-detail"));
+    id("checkout-btn").classList.add("hidden");
+    for (let i = 0; i < window.sessionStorage.length; i++) {
+      displayCartItem(window.sessionStorage.key(i));
+    }
+  }
+
+  function displayCartItem(productId) {
+    fetch("/products/" + productId)
       .then(statusCheck)
       .then(resp => resp.json())
       .then(processData)
@@ -392,44 +449,54 @@
       return response;
     }
 
-    /**
-     * Processes the data from the server and displays the previous transactions of the user
-     * @param {object} responseData - contains the data sent back from the server in JSON format
-     */
     function processData(responseData) {
-      while (id("cart-items").firstChild) {
-        id("cart-items").removeChild(id("cart-items").firstChild);
+      let card = createAndAppend("article", id("cart-items"));
+      card.classList.add("card-list");
+      let image = createAndAppend("img", card);
+      image.src = "img/" + responseData.name.toLowerCase().replaceAll(" ", "-") + ".png";
+      image.alt = "image of " + responseData.name;
+      let content = createAndAppend("div", card);
+      let name = createAndAppend("p", content);
+      name.textContent = responseData.name;
+      name.classList.add("product-name");
+      name.classList.add("bold");
+      let price = createAndAppend("p", content);
+      price.textContent = "$" + responseData.price;
+      let description = createAndAppend("p", content);
+      description.textContent = responseData.description;
+      let availability = createAndAppend("p", content);
+      availability.textContent = responseData.availability;
+      if (availability.textContent === "In Stock") {
+        availability.classList.add("green");
+      } else {
+        availability.classList.add("red");
       }
-      switchView(id("cart"), id("order"), id("signup-view"), id("home"), id("login-view"),
-                 id("purchase-view"), id("product-detail"));
-      for (let i = 0; i < responseData.length; i++) {
-        let card = createAndAppend("article", id("cart-items"));
-        card.id = responseData[i].product_id;
-        card.classList.add("card-list");
-        let image = createAndAppend("img", card);
-        image.src = "img/" + responseData[i].name.toLowerCase().replaceAll(" ", "-") + ".png";
-        image.alt = "image of " + responseData[i].name;
-        let content = createAndAppend("div", card);
-        let name = createAndAppend("p", content);
-        name.textContent = responseData[i].name;
-        name.classList.add("product-name");
-        name.classList.add("bold");
-        let price = createAndAppend("p", content);
-        price.textContent = "$" + responseData[i].price;
-        let description = createAndAppend("p", content);
-        description.textContent = responseData[i].description;
-        let availability = createAndAppend("p", content);
-        availability.textContent = responseData[i].availability;
-        if (availability.textContent === "In Stock") {
-          availability.classList.add("green");
+      let removeItemBtn = createAndAppend("button", card);
+      removeItemBtn.textContent = "Remove";
+      removeItemBtn.addEventListener("click", function() {
+        if (document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
+          removeFromSignedInCart(productId);
+          id("cart-items").removeChild(card);
         } else {
-          availability.classList.add("red");
+          removeFromUnsignedInCart(productId);
+          id("cart-items").removeChild(card);
         }
+        if (window.sessionStorage.length == 0) {
+          id("checkout-btn").classList.add("hidden");
+        } else {
+          id("checkout-btn").classList.remove("hidden");
+        }
+      });
+      window.sessionStorage.setItem(productId, responseData.price);
+      if (window.sessionStorage.length == 0) {
+        id("checkout-btn").classList.add("hidden");
+      } else {
+        id("checkout-btn").classList.remove("hidden");
       }
     }
   }
 
-  function itemsInCart() {
+  function getItemsInCart() {
     let username = document.cookie.split(';').find(row => row.trim().startsWith('username=')).split('=')[1];
     if (username == undefined) {
       window.alert("Need to sign in to continue!");
@@ -458,7 +525,7 @@
      */
     function processData(responseData) {
       for (let i = 0; i < responseData.length; i++) {
-        productsInCart.push(responseData[i].product_id);
+        window.sessionStorage.setItem(responseData[i].product_id, 1);
       }
     }
   }
@@ -467,7 +534,6 @@
    * Allows the user to see their previous orders if they are logged in
    */
   function getOrders() {
-    // let username = window.localStorage.getItem("username");
     let username = document.cookie.split(';').find(row => row.trim().startsWith('username=')).split('=')[1];
     if (username == undefined) {
       window.alert("Need to sign in to continue!");
@@ -648,7 +714,7 @@
      */
     function processData(responseData) {
       currentProductId = productId;
-      console.log("curr product id: " + currentProductId);
+      // console.log("curr product id: " + currentProductId);
       switchView(id("product-detail"), id("home"), id("order"), id("login-view"),
                  id("purchase-view"), id("signup-view"), id("cart"));
       id("product-detail").removeChild(id("product-detail").firstChild);
@@ -658,23 +724,46 @@
       singleProductList(responseData, card);
       let buyBtn = createAndAppend("button", card);
       buyBtn.textContent = "Buy";
-      buyBtn.addEventListener("click", buy);
+      buyBtn.addEventListener("click", function() {
+        fetch("/item/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "product_id": currentProductId
+          })
+        }).then(res => {
+          if (res.ok) {
+            return res.json();
+          }
+          return res.json().then(json => Promise.reject(json));
+        }).then(({ url }) => {
+          finish();
+          window.location = url;
+        }).catch(e => {
+          console.error(e);
+        })
+      });
       if (responseData.availability === "Out of Stock") {
         buyBtn.disabled = true;
       }
       let addToCartBtn = createAndAppend("button", card);
       addToCartBtn.textContent = "Add to cart";
-      addToCartBtn.addEventListener("click", addToCart);
+      addToCartBtn.addEventListener("click", function() {
+        if (document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
+          addToSignedInCart();
+        } else {
+          addToUnsignedInCart();
+        }
+      });
       if (responseData.availability === "Out of Stock") {
         addToCartBtn.disabled = true;
       }
-      console.log("cart products: " + productsInCart);
-      for (let i = 0; i < productsInCart.length; i++) {
-        if (productsInCart[i] === currentProductId) {
-          addToCartBtn.disabled = true;
-          addToCartBtn.textContent = "Added to cart";
-          break;
-        }
+      // console.log(window.sessionStorage.getItem(currentProductId));
+      if (window.sessionStorage.getItem(currentProductId) != null) {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = "Added to cart";
       }
       let rateBtn = createAndAppend("button", card);
       rateBtn.textContent = "Rate product";
@@ -688,18 +777,18 @@
     }
   }
 
-  function addToCart() {
-    if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
-      window.alert("Need to sign in to continue!");
-    } else {
-      let data = new FormData();
-      data.append("productId", currentProductId);
-      fetch("/cart/add", {method: "POST", body: data})
-        .then(statusCheck)
-        .then(resp => resp.text())
-        .then(processData)
-        .catch(handleError);
-    }
+  function addToUnsignedInCart() {
+    window.sessionStorage.setItem(currentProductId, 1);
+  }
+
+  function addToSignedInCart() {
+    let data = new FormData();
+    data.append("productId", currentProductId);
+    fetch("/cart/signedIn/add", {method: "POST", body: data})
+      .then(statusCheck)
+      .then(resp => resp.text())
+      .then(processData)
+      .catch(handleError);
 
     /**
      * Checks the status of the request to the server to see if it is successful or not.
@@ -718,22 +807,18 @@
      * @param {object} responseData - contains the data sent back from the server in JSON format
      */
     function processData(responseData) {
-      productsInCart.push(currentProductId);
+      window.sessionStorage.setItem(currentProductId, 1);
     }
   }
 
-  function removeFromCart(productId) {
-    if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
-      window.alert("Need to sign in to continue!");
-    } else {
-      let data = new FormData();
-      data.append("productId", productId);
-      fetch("/cart/remove", {method: "POST", body: data})
-        .then(statusCheck)
-        .then(resp => resp.text())
-        .then(processData)
-        .catch(handleError);
-    }
+  function removeFromSignedInCart(productId) {
+    let data = new FormData();
+    data.append("productId", productId);
+    fetch("/cart/remove", {method: "POST", body: data})
+      .then(statusCheck)
+      .then(resp => resp.text())
+      .then(processData)
+      .catch(handleError);
 
     /**
      * Checks the status of the request to the server to see if it is successful or not.
@@ -752,36 +837,36 @@
      * @param {object} responseData - contains the data sent back from the server in JSON format
      */
     function processData(responseData) {
-      productsInCart.splice(productsInCart.indexOf(productId));
-      console.log(productsInCart);
+      window.sessionStorage.removeItem(productId);
     }
+  }
+
+  function removeFromUnsignedInCart(productId) {
+    window.sessionStorage.removeItem(productId);
   }
 
   function checkOutCart() {
     if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
-      window.alert("Need to sign in to continue!");
+      window.alert("Log in to continue");
+      login();
     } else {
-      for (let i = 0; i < productsInCart.length; i++) {
-        currentProductId = productsInCart[i];
-        // let data = new FormData();
-        // data.append("productId", productsInCart[i]);
-        // fetch("/buy", {method: "POST", body: data})
-        //   .then(statusCheck)
-        //   .then(resp => resp.json())
-        //   .then(processData)
-        //   .catch(handleError);
-        buy();
-      }
-      for (let i = 0; i < productsInCart.length; i++) {
-        removeFromCart(productsInCart[i]);
+      for (let i = 0; i < window.sessionStorage.length; i++) {
+        let productId = window.sessionStorage.key(i);
+        buyEachItemInCart(productId);
+        removeFromSignedInCart(productId);
       }
     }
+  }
 
-    /**
-     * Checks the status of the request to the server to see if it is successful or not.
-     * @param {object} response - contains the information of the request to the server
-     * @returns {object} returns information about the request if it is successful
-     */
+  function buyEachItemInCart(productId) {
+    let data = new FormData();
+    data.append("productId", productId);
+    fetch("/buy", {method: "POST", body: data})
+      .then(statusCheck)
+      .then(resp => resp.text())
+      .then(processData)
+      .catch(handleError);
+
     async function statusCheck(response) {
       if (!response.ok) {
         throw new Error(await response.json());
@@ -789,14 +874,7 @@
       return response;
     }
 
-    /**
-     * Processes the data and allows the user to buy the product selected if the user is logged in
-     * @param {object} responseData - contains the data sent back from the server in JSON format
-     */
     function processData(responseData) {
-      switchView(id("purchase-view"), id("home"), id("order"), id("login-view"),
-                 id("product-detail"), id("signup-view"), id("cart"));
-      id("success-heading").classList.add("hidden");
       if (id("orderInfo-card")) {
         id("purchase-view").removeChild(id("orderInfo-card"));
       }
@@ -823,15 +901,15 @@
   /**
    * Allows the user to buy a product
    */
-  function buy() {
+  function buy(productId) {
     if (!document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
       window.alert("Need to sign in to continue!");
     } else {
       let data = new FormData();
-      data.append("productId", currentProductId);
+      data.append("productId", productId);
       fetch("/buy", {method: "POST", body: data})
         .then(statusCheck)
-        .then(resp => resp.json())
+        .then(resp => resp.text())
         .then(processData)
         .catch(handleError);
     }
@@ -843,7 +921,7 @@
      */
     async function statusCheck(response) {
       if (!response.ok) {
-        throw new Error(await response.json());
+        throw new Error(await response.text());
       }
       return response;
     }
@@ -853,29 +931,30 @@
      * @param {object} responseData - contains the data sent back from the server in JSON format
      */
     function processData(responseData) {
-      switchView(id("purchase-view"), id("home"), id("order"), id("login-view"),
-                 id("product-detail"), id("signup-view"), id("cart"));
-      id("success-heading").classList.add("hidden");
-      if (id("orderInfo-card")) {
-        id("purchase-view").removeChild(id("orderInfo-card"));
-      }
-      let card = document.createElement("article");
-      id("purchase-view").prepend(card);
-      card.classList.add("card-list");
-      card.id = "product-card";
-      let image = createAndAppend("img", card);
-      image.src = "img/" + responseData.name.toLowerCase().replaceAll(" ", "-") + ".png";
-      image.alt = "image of " + responseData.name;
-      let content = createAndAppend("div", card);
-      let name = createAndAppend("p", content);
-      name.textContent = responseData.name;
-      name.classList.add("product-name");
-      let description = createAndAppend("p", content);
-      description.textContent = responseData.descriptions;
-      let price = createAndAppend("p", content);
-      price.textContent = "$" + responseData.price;
-      id("purchase-form").classList.remove("hidden");
-      id("paymentInfo-card").classList.add("hidden");
+      // switchView(id("purchase-view"), id("home"), id("order"), id("login-view"),
+      //            id("product-detail"), id("signup-view"), id("cart"));
+      // id("success-heading").classList.add("hidden");
+      // if (id("orderInfo-card")) {
+      //   id("purchase-view").removeChild(id("orderInfo-card"));
+      // }
+      // let card = document.createElement("article");
+      // id("purchase-view").prepend(card);
+      // card.classList.add("card-list");
+      // card.id = "product-card";
+      // let image = createAndAppend("img", card);
+      // image.src = "img/" + responseData.name.toLowerCase().replaceAll(" ", "-") + ".png";
+      // image.alt = "image of " + responseData.name;
+      // let content = createAndAppend("div", card);
+      // let name = createAndAppend("p", content);
+      // name.textContent = responseData.name;
+      // name.classList.add("product-name");
+      // let description = createAndAppend("p", content);
+      // description.textContent = responseData.descriptions;
+      // let price = createAndAppend("p", content);
+      // price.textContent = "$" + responseData.price;
+      // id("purchase-form").classList.remove("hidden");
+      // id("paymentInfo-card").classList.add("hidden");
+      console.log("successfully purchased");
     }
   }
 
@@ -952,28 +1031,29 @@
       return response;
     }
     function processData(responseData) {
-      id("street-address").value = "";
-      id("city").value = "";
-      id("state").value = "";
-      id("postal-code").value = "";
-      id("credit-card-number").value = "";
-      id("security-code").value = "";
-      id("purchase-view").removeChild(id("product-card"));
-      id("purchase-view").removeChild(id("paymentInfo-card"));
-      id("confirm-heading").classList.add("hidden");
-      id("success-heading").classList.remove("hidden");
-      currentConfirmationNumber = responseData.confirmation_number;
-      purchaseDate = responseData.date;
-      let orderInfo = createAndAppend("article", id("purchase-view"));
-      orderInfo.classList.add("card-list");
-      orderInfo.id = "orderInfo-card";
-      let content = createAndAppend("div", orderInfo);
-      let confirmationNumber = createAndAppend("p", content);
-      confirmationNumber.textContent = "Confirmation Number: " + currentConfirmationNumber;
-      let date = createAndAppend("p", content);
-      date.textContent = "Purchase date: " + purchaseDate;
-      id("confirm-btn").classList.add("hidden");
-      id("edit-btn").classList.add("hidden");
+      // id("street-address").value = "";
+      // id("city").value = "";
+      // id("state").value = "";
+      // id("postal-code").value = "";
+      // id("credit-card-number").value = "";
+      // id("security-code").value = "";
+      // id("purchase-view").removeChild(id("product-card"));
+      // id("purchase-view").removeChild(id("paymentInfo-card"));
+      // id("confirm-heading").classList.add("hidden");
+      // id("success-heading").classList.remove("hidden");
+      // currentConfirmationNumber = responseData.confirmation_number;
+      // purchaseDate = responseData.date;
+      // let orderInfo = createAndAppend("article", id("purchase-view"));
+      // orderInfo.classList.add("card-list");
+      // orderInfo.id = "orderInfo-card";
+      // let content = createAndAppend("div", orderInfo);
+      // let confirmationNumber = createAndAppend("p", content);
+      // confirmationNumber.textContent = "Confirmation Number: " + currentConfirmationNumber;
+      // let date = createAndAppend("p", content);
+      // date.textContent = "Purchase date: " + purchaseDate;
+      // id("confirm-btn").classList.add("hidden");
+      // id("edit-btn").classList.add("hidden");
+      window.alert("successfully purchased!");
     }
   }
 
